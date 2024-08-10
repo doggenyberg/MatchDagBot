@@ -54,14 +54,11 @@ By using this tool, we can easily stay informed and never miss a gameday.
 - `!mdb help`: Shows all the commands and information about the bot. <br>
   ![image](https://github.com/user-attachments/assets/f21094ef-936e-412a-8eb1-0ceca3f963f8) <br><br>
 - `!mdb set_channel`: Sets the current channel for receiving game notifications. <br>
-  ![image](https://github.com/user-attachments/assets/c99fd1fc-4dad-44d3-8a44-a53e85cf2449) <br><br>
+  ![image](https://github.com/user-attachments/assets/4a7c9e6b-a1f8-412e-9645-5f0269f20565) <br><br>
 - `!mdb remove_channel`: Removes the current channel from receiving game notifications. <br>
   ![image](https://github.com/user-attachments/assets/f0c73f3c-bd6f-48ab-bcf8-a7edc92bca51) <br><br>
 - `!mdb next_game <team_name>`: Shows information about the next game for the specified team. Replace <team_name> with AIK or Hammarby. <br>
   ![image](https://github.com/user-attachments/assets/9c534a95-4a1c-4013-a1d7-a18e49131cfb) <br><br>
-
-## Scheduling
-The bot automatically checks for upcoming games and sends notifications once a day. You can modify the scheduling interval in the code if needed.
 
 ## Logging
 Logs are generated for bot events and errors. By default, logs are output to the console. You can modify the logging configuration in the code if needed.
