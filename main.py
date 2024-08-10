@@ -3,10 +3,14 @@ import http.client
 import urllib.parse
 import json
 import os
+import logging
 import settings
 from discord.ext import commands
 from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 discord_api = settings.DISCORD_API_SECRET
 football_api = settings.FOOTBALL_API_SECRET
@@ -15,6 +19,7 @@ CHANNELS_FILE = "channels.json"
 global_rounds = []
 
 
+# Customized help command
 class CustomHelpCommand(commands.HelpCommand):
     async def send_bot_help(self, mapping):
         embed = discord.Embed(
@@ -54,7 +59,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!mdb ", intents=intents, help_command=CustomHelpCommand())
 scheduler = AsyncIOScheduler()
 
-
+# Loads all the saved channels from json file
 def load_channels():
     if os.path.exists(CHANNELS_FILE):
         with open(CHANNELS_FILE, "r") as file:
@@ -67,7 +72,7 @@ def load_channels():
             json.dump({}, file, indent=4)
         return {}
 
-
+# Saves the channel to json file
 def save_channels(data):
     with open(CHANNELS_FILE, "w") as file:
         json.dump(data, file, indent=1)
@@ -106,7 +111,7 @@ def fetch_rounds():
                 all_rounds.extend(json_data.get("response", []))
 
         except Exception as e:
-            print(f"Could not retrieve data: {e}")
+            logging.error(f"Could not retrieve data: {e}")
             raise
 
     return all_rounds
@@ -123,12 +128,12 @@ def game_info(team_id):
                 break
 
         if not next_game:
-            print(f"No game found for team")
+            logging.warning(f"No game found for team")
             return None
 
         return next_game
     except Exception as e:
-        print(f"Could not retrieve data: {e}")
+        logging.warning(f"Could not retrieve data: {e}")
         return None
 
 
@@ -141,11 +146,11 @@ def days_until_game(date_str):
         return round(days_left)
 
     except ValueError as e:
-        print(f"ValueError calculating days until match: {e}")
+        logging.error(f"ValueError calculating days until match: {e}")
         return "Okänt antal"
 
     except Exception as e:
-        print(f"Error calculating days until match: {e}")
+        logging.error(f"Error calculating days until match: {e}")
         return "Okänt antal"
 
 
@@ -208,9 +213,9 @@ def embed_message(game, team_id):
 
 @bot.event
 async def on_ready():
-    print(f"Logged in as {bot.user}")
+    logging.info(f"Logged in as {bot.user}")
     scheduler.start()
-    print(f"Scheduler is now started")
+    logging.info(f"Scheduler is started")
 
 
 @bot.command()
@@ -268,7 +273,7 @@ async def next_game(ctx, team_name: str = None):
             await ctx.send(f"Kunde inte hitta nästa match.")
 
     except Exception as e:
-        print(f"Couldn't send message for !mdb next_game: {e}")
+        logging.warning(f"Couldn't send message for !mdb next_game: {e}")
         await ctx.send(f"Jag behöver vila en stund! Prova igen imorgon.")
 
 async def send_game_updates():
@@ -277,10 +282,10 @@ async def send_game_updates():
 
     server_channels = load_channels()
     if not server_channels:
-        print("No channels saved. No updates will be sent.")
+        logging.info("No channels saved. No updates will be sent.")
         return
     
-    print(f"Loaded server_channels: {server_channels}")
+    logging.info(f"Loaded server_channels: {server_channels}")
 
     try:
         global_rounds = fetch_rounds()
@@ -288,7 +293,6 @@ async def send_game_updates():
         for server_id, channel_id in server_channels.items():
             channel = bot.get_channel(int(channel_id))
             if channel:
-                print(f"Found channel: {channel.name}")
                 for team_name in ["AIK", "Hammarby"]:
                     team_id = get_team_id(team_name)
                     next_game = game_info(team_id)
@@ -298,7 +302,7 @@ async def send_game_updates():
                         print("Game update was sent successfully to all channels")
                         break
     except Exception as e:
-        print(f"Couldn't send game update: {e}")
+        logging.error(f"Couldn't send game update: {e}")
 
 
 scheduler.add_job(send_game_updates, "interval", days=1)
