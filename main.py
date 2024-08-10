@@ -23,38 +23,46 @@ global_rounds = []  # List to store game round data globally
 class CustomHelpCommand(commands.HelpCommand):
     async def send_bot_help(self, mapping):
         # Create an embed object to format the help message in a more readable way.
-        embed = discord.Embed(title="Help", color=discord.Color.teal())
+        embed = discord.Embed(title="Hjälp", color=discord.Color.teal())
 
-        # Add a blank field to the embed (likely for spacing purposes).
+        # Add a blank field to the embed.
         embed.add_field(name="", value="", inline=False)
 
         # Add a field for the `!mdb set_channel` command description.
         embed.add_field(
             name="`!mdb set_channel`",
-            value="Sets the current channel for automatic notifications.\n\u200b",
+            value="Ställer in aktuell kanal för automatiska notifieringar.\n\u200b",
             inline=False,
         )
 
         # Add a field for the `!mdb remove_channel` command description.
         embed.add_field(
             name="`!mdb remove_channel`",
-            value="Stops automatic notifications for the current channel.\n\u200b",
+            value="Stoppar aktuell kanal för automatiska notifieringar.\n\u200b",
             inline=False,
         )
 
         # Add a field for the `!mdb next_game` command description.
         embed.add_field(
-            name="`!mdb next_game` followed by `AIK` or `Hammarby`",
-            value="Shows information about the next game for the specified team.\n\u200b",
+            name="`!mdb next_game` följt av `AIK` eller `Hammarby`",
+            value="Visar information om nästkommande match för önskat lag.\n\u200b",
             inline=False,
         )
 
         # Add a field explaining when notifications are sent.
         embed.add_field(
-            name="When are notifications sent?",
-            value="Notifications are sent automatically for AIK and Hammarby one day before the match day for each team.",
+            name="När skickas notifieringarna?",
+            value="Notifieringarna skickas ut automatiskt för AIK och Hammarby en dag innan matchdagen för respektive lag.",
             inline=False,
         )
+
+        # Add a field explaining which teams are currently setup for the bot
+        embed.add_field(
+            name="Vilka lag kan man hämta matchinfo för?"
+            value="Just nu kan man bara hämta matchinfo för AIK och Hammarby IF",
+            inline=False,
+        )
+
 
         # Send the formatted help message to the context channel.
         await self.context.send(embed=embed)
@@ -339,7 +347,7 @@ async def set_channel(ctx):
     # Check if the server is already registered and the channel is already set for notifications
     if server_id in server_channels and server_channels[server_id] == channel_id:
         # Inform the user that the current channel is already set for notifications
-        await ctx.send("This channel is already set for notifications!")
+        await ctx.send("Den här kanalen är redan inställd för notifikationer!")
         return
 
     # Set the current channel for notifications in the server
@@ -347,7 +355,7 @@ async def set_channel(ctx):
     # Save the updated channel list to the file
     save_channels(server_channels)
     # Inform the user that the bot will send match notifications in the current channel
-    await ctx.send(f'I will send match notifications in "{ctx.channel.name}".')
+    await ctx.send(f'Jag kommer att skicka match-notifieringar i "{ctx.channel.name}".')
 
 
 # Discord command !mdb remove_channel
@@ -369,16 +377,16 @@ async def remove_channel(ctx):
             save_channels(server_channels)
             # Inform the user that the notification channel has been removed
             await ctx.send(
-                "The channel for match notifications has been removed from this server."
+                "Notifikationer kommer inte längre skickas till denna kanal."
             )
         else:
             # Inform the user that the command must be run in the same channel where `!mdb set_channel` was used
             await ctx.send(
-                "This command must be executed in the same channel where `!mdb set_channel` was set."
+                "Detta kommando måste köras i samma kanal där `!mdb set_channel` sattes ursprungligen."
             )
     else:
         # Inform the user that no notification channel is set for this server
-        await ctx.send("There is no channel set for this server.")
+        await ctx.send("Det finns ingen kanal som är inställd för notifikationer. Använd `!mdb set_channel` för att ställa in kanal.")
 
 
 # Discord command !mdb next_channel
@@ -389,7 +397,7 @@ async def next_game(ctx, team_name: str = None):
     if not team_name:
         # Inform the user that they need to provide a team name and return early
         await ctx.send(
-            "You need to specify a team name after the command `!mdb next_game`. Please write `AIK` or `Hammarby`."
+            "Du måste ange ett lagnamn efter kommandot `!mdb next_game`. Skriv `AIK` eller `Hammarby`."
         )
         return
 
@@ -399,7 +407,7 @@ async def next_game(ctx, team_name: str = None):
     # If the team ID is not found, inform the user and return early
     if not team_id:
         await ctx.send(
-            "Couldn't find the team. Please write `AIK` or `Hammarby` after the command `!mdb next_game`."
+            "Kunde inte hitta laget. Skriv `AIK` eller `Hammarby` efter kommandot `!mdb next_game`"
         )
         return
 
@@ -414,13 +422,13 @@ async def next_game(ctx, team_name: str = None):
             await ctx.send(embed=embedded_message)
         else:
             # If no game was found, inform the user
-            await ctx.send("Couldn't find the next match.")
+            await ctx.send(f"Kunde inte hitta nästa match.")
 
     except Exception as e:
         # Log a warning if an error occurs while sending the next game message
         logging.warning(f"Couldn't send message for !mdb next_game: {e}")
         # Inform the user that the bot is temporarily unable to process the request
-        await ctx.send("I need a break! Please try again tomorrow.")
+        await ctx.send("Jag behöver en paus! Prova gärna igen imorgon.")
 
 
 # Calls the fetch function and sends
