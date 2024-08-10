@@ -52,7 +52,7 @@ class CustomHelpCommand(commands.HelpCommand):
         # Add a field explaining when notifications are sent.
         embed.add_field(
             name="När skickas notifieringarna?",
-            value="Notifieringarna skickas ut automatiskt för AIK och Hammarby en dag innan matchdagen för respektive lag.",
+            value="Notifieringarna skickas ut automatiskt för AIK och Hammarby en dag innan matchdagen för respektive lag.\n\u200b",
             inline=False,
         )
 
@@ -343,7 +343,7 @@ async def set_channel(ctx):
     server_id = str(ctx.guild.id)
     # Get the current channel ID
     channel_id = ctx.channel.id
-
+    
     # Check if the server is already registered and the channel is already set for notifications
     if server_id in server_channels and server_channels[server_id] == channel_id:
         # Inform the user that the current channel is already set for notifications
