@@ -12,13 +12,47 @@ discord_api = settings.DISCORD_API_SECRET
 football_api = settings.FOOTBALL_API_SECRET
 football_base_url = "v3.football.api-sports.io"
 CHANNELS_FILE = "channels.json"
+global_rounds = []
+
+
+class CustomHelpCommand(commands.HelpCommand):
+    async def send_bot_help(self, mapping):
+        embed = discord.Embed(
+            title="Hjälp",
+            color=discord.Color.teal()
+        )
+
+        embed.add_field(
+            name="`!mdb set_channel`",
+            value="Ställer in aktuell kanal för automatiska notifieringar.\n\u200b",
+            inline=False
+        )
+
+        embed.add_field(
+            name="`!mdb remove_channel`",
+            value="Stoppar aktuell kanal för automatiska notifieringar.\n\u200b",
+            inline=False
+        )
+
+        embed.add_field(
+            name="`!mdb next_game` följt utav `AIK` eller `Hammarby`",
+            value="Visar information om nästkommande match för önskat lag.\n\u200b",
+            inline=False
+        )
+
+        embed.add_field(
+            name="När skickas notifieringarna?",
+            value="Notifieringarna skickas ut automatiskt för AIK och Hammarby två dagar innan matchdagen för respektive lag",
+            inline=False
+)
+
+        await self.context.send(embed=embed)
+
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="!mdb ", intents=intents)
+bot = commands.Bot(command_prefix="!mdb ", intents=intents, help_command=CustomHelpCommand())
 scheduler = AsyncIOScheduler()
-
-global_rounds = []
 
 
 def load_channels():
@@ -160,11 +194,12 @@ def embed_message(game, team_id):
 
     embed = discord.Embed(
         title=game["league"]["name"],
-        description=f"{home_or_away()} om **{days_left}** dagar!",
+        description=f"{home_or_away()} om **{days_left} dagar**!",
         color=get_color(team_id),
     )
 
     embed.set_thumbnail(url=team_logo)
+    embed.add_field(name="", value="", inline=False)
     embed.add_field(name="Datum", value=formatted_date, inline=True)
     embed.add_field(name="Arena", value=arena, inline=True)
 
@@ -184,16 +219,42 @@ async def set_channel(ctx):
     channel_id = ctx.channel.id
     server_channels[server_id] = channel_id
     save_channels(server_channels)
-    await ctx.send(f'Jag kommer att skicka match-notifieringar i "{ctx.channel.name}"')
+    await ctx.send(f'Jag kommer att skicka match-notifieringar i "{ctx.channel.name}".')
 
 
 @bot.command()
-async def nextgame(ctx, team_name: str):
+async def remove_channel(ctx):
+    server_id = str(ctx.guild.id)
+    current_channel_id = ctx.channel.id
+
+    if server_id in server_channels:
+        if server_channels[server_id] == current_channel_id:
+            del server_channels[server_id]
+            save_channels(server_channels)
+            await ctx.send(
+                f"Kanalen för match-notifieringar har tagits bort från denna server."
+            )
+        else:
+            await ctx.send(
+                "Detta kommando måste köras i samma kanal där `!mdb set_channel` sattes."
+            )
+    else:
+        await ctx.send("Det finns ingen inställd kanal för denna server.")
+
+
+@bot.command()
+async def next_game(ctx, team_name: str = None):
+    if not team_name:
+        await ctx.send(
+            "Du måste ange ett lagnamn efter kommandot `!mdb next_game`. Skriv `AIK` eller `Hammarby`."
+        )
+        return
+
     team_id = get_team_id(team_name)
 
     if not team_id:
         await ctx.send(
-            "Kunde inte hitta laget. Skriv `AIK` eller `Hammarby` efter kommandot `!mdb nextgame`"
+            "Kunde inte hitta laget. Skriv `AIK` eller `Hammarby` efter kommandot `!mdb next_game`"
         )
         return
 
@@ -207,15 +268,18 @@ async def nextgame(ctx, team_name: str):
             await ctx.send(f"Kunde inte hitta nästa match.")
 
     except Exception as e:
-        print(f"Couldn't send message for !mdb nextgame: {e}")
+        print(f"Couldn't send message for !mdb next_game: {e}")
         await ctx.send(f"Jag behöver vila en stund! Prova igen imorgon.")
-
 
 async def send_game_updates():
     global server_channels
     global global_rounds
 
     server_channels = load_channels()
+    if not server_channels:
+        print("No channels saved. No updates will be sent.")
+        return
+    
     print(f"Loaded server_channels: {server_channels}")
 
     try:
@@ -231,12 +295,12 @@ async def send_game_updates():
                     if next_game and days_until_game(next_game["fixture"]["date"]) == 2:
                         embedded_message = embed_message(next_game, team_id)
                         await channel.send(embed=embedded_message)
-                        print("Game update was sent successfully")
+                        print("Game update was sent successfully to all channels")
                         break
     except Exception as e:
         print(f"Couldn't send game update: {e}")
 
 
-scheduler.add_job(send_game_updates, "interval", seconds=10)
+scheduler.add_job(send_game_updates, "interval", days=1)
 
 bot.run(discord_api)
