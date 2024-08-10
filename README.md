@@ -2,7 +2,7 @@
 
 ## Overview
 
-This Discord bot was created for me and my friends who support either AIK or Hammarby IF and want to stay updated on when the next game is. The bot uses data from an external football API to provide notifications about upcoming games for our favorite teams.
+This Discord bot was created for me and my friends who support either AIK or Hammarby IF and want to stay updated on when the next game is. The bot uses data from [API-Sports](https://api-sports.io/documentation/football/v3#tag/Fixtures/operation/get-fixtures) to provide notifications about upcoming games for our favorite teams.
 
 - **Game Notifications**: The bot automatically sends notifications to the channels you’ve set up one day before a game takes place. This ensures we get a reminder about the upcoming game and don’t miss any important gamedays.
 
@@ -29,11 +29,11 @@ By using this tool, we can easily stay informed and never miss a gameday.
 
 ### Configuration
 1. **Create a settings.py File**  
-   Add your Discord API token and football API key to a settings.py file.<br>
+   Add your Discord API token and Sports API key to a settings.py file.<br>
    ```python
    # settings.py
    DISCORD_API_SECRET = 'your_discord_api_token_here'
-   FOOTBALL_API_SECRET = 'your_football_api_key_here'
+   FOOTBALL_API_SECRET = 'your_sports_api_key_here'
    ```
    <br>
 3. **Setup JSON Files**  
@@ -64,5 +64,5 @@ By using this tool, we can easily stay informed and never miss a gameday.
 Logs are generated for bot events and errors. By default, logs are output to the console. You can modify the logging configuration in the code if needed.
 
 ## Troubleshooting
-- **Bot not sending updates**: Ensure the bot has permission to send messages in the configured channels. Verify that the football API is returning valid data.
+- **Bot not sending updates**: Ensure the bot has permission to send messages in the configured channels. Verify that the Sports API is returning valid data.
 - **Command Errors**: Ensure commands are used correctly and the bot has appropriate permissions.
