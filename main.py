@@ -58,7 +58,7 @@ class CustomHelpCommand(commands.HelpCommand):
 
         # Add a field explaining which teams are currently setup for the bot
         embed.add_field(
-            name="Vilka lag kan man hämta matchinfo för?"
+            name="Vilka lag kan man hämta matchinfo för?",
             value="Just nu kan man bara hämta matchinfo för AIK och Hammarby IF",
             inline=False,
         )
