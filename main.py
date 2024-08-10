@@ -102,16 +102,16 @@ def fetch_rounds():
             res = conn.getresponse()
             data = res.read()
             json_data = json.loads(data.decode("utf-8"))
+            
+            logging.debug(f"API response for team ID {team_id}: {json_data}")
 
             if json_data.get("errors"):
-                raise Exception(
-                    f"Error fetching data from team ID {team_id}: {json_data['errors']}"
-                )
+                raise Exception(f"Error fetching data from team ID {team_id}: {json_data['errors']}")
             else:
                 all_rounds.extend(json_data.get("response", []))
 
         except Exception as e:
-            logging.error(f"Could not retrieve data: {e}")
+            logging.error(f"Could not retrieve data for team ID {team_id}: {e}")
             raise
 
     return all_rounds
