@@ -128,7 +128,7 @@ def game_info(team_id):
                 break
 
         if not next_game:
-            logging.warning(f"No game found for team")
+            logging.warning(f"No game found for team. Array global_rounds: {global_rounds}")
             return None
 
         return next_game
