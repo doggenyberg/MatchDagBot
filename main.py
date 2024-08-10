@@ -42,7 +42,7 @@ class CustomHelpCommand(commands.HelpCommand):
 
         embed.add_field(
             name="När skickas notifieringarna?",
-            value="Notifieringarna skickas ut automatiskt för AIK och Hammarby två dagar innan matchdagen för respektive lag",
+            value="Notifieringarna skickas ut automatiskt för AIK och Hammarby en dag innan matchdagen för respektive lag",
             inline=False
 )
 
@@ -292,7 +292,7 @@ async def send_game_updates():
                 for team_name in ["AIK", "Hammarby"]:
                     team_id = get_team_id(team_name)
                     next_game = game_info(team_id)
-                    if next_game and days_until_game(next_game["fixture"]["date"]) == 2:
+                    if next_game and days_until_game(next_game["fixture"]["date"]) == 1:
                         embedded_message = embed_message(next_game, team_id)
                         await channel.send(embed=embedded_message)
                         print("Game update was sent successfully to all channels")
