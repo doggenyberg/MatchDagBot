@@ -131,6 +131,8 @@ server_channels = load_channels()
 
 # Fetch API to retrieve game data
 def fetch_rounds():
+    global global_rounds
+    
     # Establish a connection to the football API
     conn = http.client.HTTPSConnection("v3.football.api-sports.io")
 
@@ -169,6 +171,7 @@ def fetch_rounds():
                 )
             else:
                 # Append the fetched rounds to the all_rounds list
+                global_rounds = all_rounds
                 all_rounds.extend(json_data.get("response", []))
 
         except Exception as e:
@@ -430,6 +433,16 @@ async def next_game(ctx, team_name: str = None):
         # Inform the user that the bot is temporarily unable to process the request
         await ctx.send("Jag behöver en paus! Prova gärna igen imorgon.")
 
+# Discord command !mdb fetch_games
+# calls the send_game_updates()
+# used for manual fetching
+@bot.command()
+async def fetch_games(ctx):
+    try:
+        fetch_rounds()
+        await ctx.send('Datan har hämtats utan problem!')
+    except Exception:
+        await ctx.send('Kunde inte hämta data.')
 
 # Calls the fetch function and sends
 # out notifiations to all saved channels
@@ -454,7 +467,6 @@ async def send_game_updates():
         global_rounds = (
             fetched_rounds  # Update the global_rounds variable with new data
         )
-        save_global_rounds()  # Save the updated rounds to the JSON file
 
         # Iterate over all saved server channels
         for server_id, channel_id in server_channels.items():
